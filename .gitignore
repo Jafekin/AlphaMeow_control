@@ -1,0 +1,27 @@
+.deveco/**
+.vscode/**
+build/**
+# src/**
+LICENSE
+README.md
+src/base/**
+src/build/**
+src/device/**
+src/domains/**
+src/foundation/**
+src/out/**
+src/prebuilts/**
+src/productdefine/**
+src/test/**
+src/third_party/**
+src/utils/**
+src/vendor/**
+src/NOTICE
+src/ohos_config.json
+src/applications/sample/wifi-iot/bundle.json
+src/applications/sample/wifi-iot/README_zh.md
+src/applications/sample/wifi-iot/app/samgr/**
+src/applications/sample/wifi-iot/app/startup/**
+
+
+

@@ -12,7 +12,8 @@ static_library("balance_car") {
         "//vendor/bearpi/bearpi_hm_nano/common/iot_hardware_hals/src/hal_iot_i2c_ex.c",
         "main.c",
         "wifi/wifi_connect.c",
-        "bno055/bno055.c"
+        "bno055/bno055.c",
+        "encoder/encoder.c"
         
     ]
     cflags = [ "-Wno-unused-variable" ]
@@ -26,6 +27,7 @@ static_library("balance_car") {
         "//foundation/communication/wifi_lite/interfaces/wifiservice",
         "//utils/native/lite/include",
         "wifi",
-        "bno055"
+        "bno055",
+        "encoder"
     ]
 }

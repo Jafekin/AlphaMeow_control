@@ -18,27 +18,28 @@
 #include "lwip/sockets.h"
 
 #include "bno055.h"
+#include "encoder.h"
 
 osMessageQueueId_t EulerQueueId;
 
-static void UARTTask(void);
+static void PIDTask(void);
 static void UDPClientTask(void);
 
 static void TaskCreate(void)
 {
     osThreadAttr_t attr;
 
-    // UARTTASK
-    attr.name = "UARTTask";
+    // PIDTASK
+    attr.name = "PIDTask";
     attr.attr_bits = 0U;
     attr.cb_mem = NULL;
     attr.cb_size = 0U;
     attr.stack_mem = NULL;
     attr.stack_size = 1024;
     attr.priority = 25;
-    if (osThreadNew((osThreadFunc_t)UARTTask, NULL, &attr) == NULL)
+    if (osThreadNew((osThreadFunc_t)PIDTask, NULL, &attr) == NULL)
     {
-        printf("Failed to create UARTTask!\n");
+        printf("Failed to create PIDTask!\n");
     }
 
     // UDPCLIENTTASK
@@ -52,26 +53,31 @@ static void TaskCreate(void)
 
     if (osThreadNew((osThreadFunc_t)UDPClientTask, NULL, &attr) == NULL)
     {
-        printf("[UDPClientDemo] Failed to create UDPClientTask!\n");
+        printf("Failed to create UDPClientTask!\n");
     }
 }
 
 SYS_RUN(TaskCreate);
 
-static void UARTTask(void)
+static void PIDTask(void)
 {
     BNO055Init();
+    EncoderInit();
     struct bno055_euler_t euler;
     EulerQueueId = osMessageQueueNew(1, sizeof(euler), NULL);
     IoTGpioInit(2);
     IoTGpioSetFunc(2, IOT_GPIO_FUNC_GPIO_2_GPIO);
     IoTGpioSetDir(2, IOT_GPIO_DIR_OUT);
     IoTGpioSetOutputVal(2, IOT_GPIO_VALUE1);
+
     while (1)
     {
+        printf("%d,%d\n", EncoderGetLeftWheelCnt(), EncoderGetRightWheelCnt());
         ReadBNO005Euler(&euler);
-        int ret = osMessageQueuePut(EulerQueueId, &euler, 0U, 0U);
-        printf("1:%d\n", ret);
+        if (osMessageQueuePut(EulerQueueId, &euler, 0U, 0U) != osOK)
+        {
+            printf("EulerQueueId put error!\n");
+        }
         osThreadYield();
     }
 }
@@ -111,8 +117,10 @@ static void UDPClientTask(void)
     struct bno055_euler_t euler;
     while (1)
     {
-        int ret = osMessageQueueGet(EulerQueueId, &euler, 0U, 10);
-        printf("2:%d\n", ret);
+        if (osMessageQueueGet(EulerQueueId, &euler, 0U, 10) != osOK)
+        {
+            printf("EulerQueueId get error!\n");
+        }
         sprintf(stream, "channels: %d,%d,%d\n", euler.h, euler.r, euler.p);
         sendto(sock_fd, stream, strlen(stream), 0, (struct sockaddr *)&send_addr, addr_length);
         osThreadYield();
