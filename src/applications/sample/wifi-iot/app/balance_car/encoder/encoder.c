@@ -1,7 +1,7 @@
 /*
  * @Author        陈佳辉 1946847867@qq.com
  * @Date          2023-08-06 21:56:38
- * @LastEditTime  2023-08-08 10:45:32
+ * @LastEditTime  2023-08-08 17:48:12
  * @DescripCurrentEncoderion
  *
  */
@@ -12,7 +12,7 @@
 #include "iot_errno.h"
 #include "iot_gpio.h"
 #include "iot_gpio_ex.h"
-#include "hi_time.h"
+
 #include "encoder.h"
 
 // iot_gpio.h的极性设置与示波器实测是反的, 重新定义一个类型 （from 润和）
@@ -54,7 +54,6 @@ typedef struct
 
 Encoder LeftWheel;
 Encoder RightWheel;
-
 void EncoderInit(void)
 {
     LeftWheel.Phase_A = LEFT_ENCODER_A_GPIO;

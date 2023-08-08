@@ -13,7 +13,8 @@ static_library("balance_car") {
         "main.c",
         "wifi/wifi_connect.c",
         "bno055/bno055.c",
-        "encoder/encoder.c"
+        "encoder/encoder.c",
+        "motor/motor.c"
         
     ]
     cflags = [ "-Wno-unused-variable" ]
@@ -28,6 +29,7 @@ static_library("balance_car") {
         "//utils/native/lite/include",
         "wifi",
         "bno055",
-        "encoder"
+        "encoder",
+        "motor"
     ]
 }

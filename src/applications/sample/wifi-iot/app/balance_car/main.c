@@ -19,8 +19,10 @@
 
 #include "bno055.h"
 #include "encoder.h"
+#include "motor.h"
 
 osMessageQueueId_t EulerQueueId;
+// osTimerId_t EncoderTimerId;
 
 static void PIDTask(void);
 static void UDPClientTask(void);
@@ -63,6 +65,7 @@ static void PIDTask(void)
 {
     BNO055Init();
     EncoderInit();
+    MotorPwmInit();
     struct bno055_euler_t euler;
     EulerQueueId = osMessageQueueNew(1, sizeof(euler), NULL);
     IoTGpioInit(2);
@@ -72,6 +75,7 @@ static void PIDTask(void)
 
     while (1)
     {
+        MotorForward(10);
         printf("%d,%d\n", EncoderGetLeftWheelCnt(), EncoderGetRightWheelCnt());
         ReadBNO005Euler(&euler);
         if (osMessageQueuePut(EulerQueueId, &euler, 0U, 0U) != osOK)
