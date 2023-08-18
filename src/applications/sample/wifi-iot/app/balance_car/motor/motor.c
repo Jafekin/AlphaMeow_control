@@ -1,14 +1,10 @@
 /*
  * @Author        陈佳辉 1946847867@qq.com
  * @Date          2023-08-08 10:57:35
- * @LastEditTime  2023-08-08 21:26:49
+ * @LastEditTime  2023-08-18 21:35:12
  * @Description
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <memory.h>
 #include "iot_gpio.h"
 #include "iot_gpio_ex.h"
 #include "iot_pwm.h"
@@ -65,28 +61,61 @@ void MotorPwmStop(void)
     IoTPwmStop(MOTOR_RIGHT_ENB_PWM_PORT);
 }
 
-void MotorForward(uint32_t Duty)
+void MotorForward(uint16_t Pwm)
 {
     MotorPwmStop();
     // 左轮正转
     IoTGpioSetOutputVal(MOTOR_LEFT_IN1_PIN, IOT_GPIO_VALUE0);
     IoTGpioSetOutputVal(MOTOR_LEFT_IN2_PIN, IOT_GPIO_VALUE1);
-    IoTPwmStart(MOTOR_LEFT_ENA_PWM_PORT, Duty, IOT_FREQ);
+    IoTPwmStart(MOTOR_LEFT_ENA_PWM_PORT, Pwm, IOT_FREQ);
     // 右轮正转
     IoTGpioSetOutputVal(MOTOR_RIGHT_IN3_PIN, IOT_GPIO_VALUE0);
     IoTGpioSetOutputVal(MOTOR_RIGHT_IN4_PIN, IOT_GPIO_VALUE1);
-    IoTPwmStart(MOTOR_RIGHT_ENB_PWM_PORT, Duty, IOT_FREQ);
+    IoTPwmStart(MOTOR_RIGHT_ENB_PWM_PORT, Pwm, IOT_FREQ);
 }
 
-void MotorBackward(uint32_t Duty)
+void MotorBackward(uint16_t Pwm)
 {
     MotorPwmStop();
     // 左轮反转
     IoTGpioSetOutputVal(MOTOR_LEFT_IN1_PIN, IOT_GPIO_VALUE1);
     IoTGpioSetOutputVal(MOTOR_LEFT_IN2_PIN, IOT_GPIO_VALUE0);
-    IoTPwmStart(MOTOR_LEFT_ENA_PWM_PORT, Duty, IOT_FREQ);
+    IoTPwmStart(MOTOR_LEFT_ENA_PWM_PORT, Pwm, IOT_FREQ);
     // 右轮反转
     IoTGpioSetOutputVal(MOTOR_RIGHT_IN3_PIN, IOT_GPIO_VALUE1);
     IoTGpioSetOutputVal(MOTOR_RIGHT_IN4_PIN, IOT_GPIO_VALUE0);
-    IoTPwmStart(MOTOR_RIGHT_ENB_PWM_PORT, Duty, IOT_FREQ);
+    IoTPwmStart(MOTOR_RIGHT_ENB_PWM_PORT, Pwm, IOT_FREQ);
+}
+
+void MotorControl(int LeftPwm, int RightPwm)
+{
+    MotorPwmStop();
+    // printf("%d %d\n", LeftPwm, RightPwm);
+    if (LeftPwm < 0)
+    {
+        IoTGpioSetOutputVal(MOTOR_LEFT_IN1_PIN, IOT_GPIO_VALUE0);
+        IoTGpioSetOutputVal(MOTOR_LEFT_IN2_PIN, IOT_GPIO_VALUE1);
+        LeftPwm = -LeftPwm;
+    }
+    else
+    {
+        IoTGpioSetOutputVal(MOTOR_LEFT_IN1_PIN, IOT_GPIO_VALUE1);
+        IoTGpioSetOutputVal(MOTOR_LEFT_IN2_PIN, IOT_GPIO_VALUE0);
+    }
+    IoTPwmStart(MOTOR_LEFT_ENA_PWM_PORT, LeftPwm, IOT_FREQ);
+
+    if (RightPwm < 0)
+    {
+        IoTGpioSetOutputVal(MOTOR_RIGHT_IN3_PIN, IOT_GPIO_VALUE0);
+        IoTGpioSetOutputVal(MOTOR_RIGHT_IN4_PIN, IOT_GPIO_VALUE1);
+        RightPwm = -RightPwm;
+    }
+    else
+    {
+        IoTGpioSetOutputVal(MOTOR_RIGHT_IN3_PIN, IOT_GPIO_VALUE1);
+        IoTGpioSetOutputVal(MOTOR_RIGHT_IN4_PIN, IOT_GPIO_VALUE0);
+    }
+    IoTPwmStart(MOTOR_RIGHT_ENB_PWM_PORT, RightPwm, IOT_FREQ);
+
+    // printf("%d %d\n", LeftPwm, RightPwm);
 }

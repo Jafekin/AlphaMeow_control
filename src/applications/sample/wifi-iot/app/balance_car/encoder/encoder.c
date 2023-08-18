@@ -1,7 +1,7 @@
 /*
  * @Author        陈佳辉 1946847867@qq.com
  * @Date          2023-08-06 21:56:38
- * @LastEditTime  2023-08-08 17:48:12
+ * @LastEditTime  2023-08-17 18:25:30
  * @DescripCurrentEncoderion
  *
  */
@@ -135,4 +135,17 @@ void EncoderGetWheelCnt(int16_t *LeftCnt, int16_t *RightCnt)
     *LeftCnt = LeftWheel.Counter;
     *RightCnt = RightWheel.Counter;
     return;
+}
+
+int limit(int num)
+{
+    if (num > 99)
+    {
+        num = 99;
+    }
+    if (num < -99)
+    {
+        num = -99;
+    }
+    return num;
 }

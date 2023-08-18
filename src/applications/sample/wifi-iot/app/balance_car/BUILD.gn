@@ -14,7 +14,9 @@ static_library("balance_car") {
         "wifi/wifi_connect.c",
         "bno055/bno055.c",
         "encoder/encoder.c",
-        "motor/motor.c"
+        "motor/motor.c",
+        "pid/pid.c",
+        "test/test.c"
         
     ]
     cflags = [ "-Wno-unused-variable" ]
@@ -30,6 +32,8 @@ static_library("balance_car") {
         "wifi",
         "bno055",
         "encoder",
-        "motor"
+        "motor",
+        "pid",
+        "test"
     ]
 }

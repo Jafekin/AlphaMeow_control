@@ -1,7 +1,7 @@
 /*
  * @Author        陈佳辉 1946847867@qq.com
  * @Date          2023-08-05 18:38:54
- * @LastEditTime  2023-08-08 17:46:29
+ * @LastEditTime  2023-08-18 21:00:32
  * @Description
  *
  */
@@ -50,6 +50,7 @@ uint8_t BNO055UartIoInit(void)
     IoTGpioInit(5);
     IoTGpioSetFunc(5, IOT_GPIO_FUNC_GPIO_5_UART1_RXD);
     IoTGpioInit(6);
+
     IoTGpioSetFunc(6, IOT_GPIO_FUNC_GPIO_6_UART1_TXD);
     // 初始化 UART1
     uint32_t ret = IoTUartInit(BNO055_UART, &uart_attr);
@@ -131,7 +132,7 @@ void BNO055Init(void)
             printf("Error: BNO055Init 1 !\r\n");
         }
         usleep(19);
-        ret = BNO055WriteReg(BNO_REG_ADDR_OPR_MODE, BNO_REG_VAL_OPR_MODE_NDOF);
+        ret = BNO055WriteReg(BNO_REG_ADDR_OPR_MODE, BNO_REG_VAL_OPR_MODE_IMU);
         if (ret != 0)
         {
             printf("Error: BNO055Init 2 !\r\n");
@@ -211,7 +212,7 @@ void ReadBNO005Gyro(struct bno055_gyro_t *gyro)
     {
         gyro->x = (int16_t)uart_buff_ptr[3] << 8 | (int16_t)uart_buff_ptr[2];
         gyro->y = (int16_t)uart_buff_ptr[5] << 8 | (int16_t)uart_buff_ptr[4];
-        gyro->z = (int16_t)uart_buff_ptr[5] << 8 | (int16_t)uart_buff_ptr[6];
+        gyro->z = (int16_t)uart_buff_ptr[7] << 8 | (int16_t)uart_buff_ptr[6];
 
         gyro->x >>= BNO_GYR_SHIFT_BITS;
         gyro->y >>= BNO_GYR_SHIFT_BITS;

@@ -98,6 +98,7 @@
 
 #define BNO_REG_VAL_OPR_MODE_CFG 0x00
 #define BNO_REG_VAL_OPR_MODE_NDOF 0x0C
+#define BNO_REG_VAL_OPR_MODE_IMU 0x08
 #define BNO_REG_VAL_CHIPID 0xA0
 
 #define BNO_EUL_DEG_LSB (16) // 1 degree = 16 LSB
