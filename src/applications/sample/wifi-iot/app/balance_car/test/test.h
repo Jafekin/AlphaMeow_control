@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 extern float Vertical_Kp, Vertical_Kd, Velocity_Kp, Velocity_Ki, Med;
+extern int integral_limit;
 
 float GetData(uint8_t *DataBuff);
 

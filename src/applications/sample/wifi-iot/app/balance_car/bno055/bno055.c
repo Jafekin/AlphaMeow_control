@@ -132,7 +132,7 @@ void BNO055Init(void)
             printf("Error: BNO055Init 1 !\r\n");
         }
         usleep(19);
-        ret = BNO055WriteReg(BNO_REG_ADDR_OPR_MODE, BNO_REG_VAL_OPR_MODE_IMU);
+        ret = BNO055WriteReg(BNO_REG_ADDR_OPR_MODE, BNO_REG_VAL_OPR_MODE_NDOF);
         if (ret != 0)
         {
             printf("Error: BNO055Init 2 !\r\n");
