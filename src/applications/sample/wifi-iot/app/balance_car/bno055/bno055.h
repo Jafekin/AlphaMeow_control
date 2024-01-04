@@ -1,7 +1,7 @@
 /*
  * @Author        陈佳辉 1946847867@qq.com
  * @Date          2023-08-05 18:39:02
- * @LastEditTime  2023-08-08 11:18:55
+ * @LastEditTime  2023-08-28 18:33:46
  * @Description
  *
  */
@@ -98,7 +98,11 @@
 
 #define BNO_REG_VAL_OPR_MODE_CFG 0x00
 #define BNO_REG_VAL_OPR_MODE_NDOF 0x0C
+#define BNO_REG_VAL_OPR_MODE_NDOF_FMC_OFF 0x0B
 #define BNO_REG_VAL_OPR_MODE_IMU 0x08
+#define BNO_REG_VAL_OPR_MODE_COMPASS 0x09
+#define BNO_REG_VAL_OPR_MODE_M4G 0x0A
+#define BNO_REG_VAL_OPR_MODE_M4G 0x0A
 #define BNO_REG_VAL_CHIPID 0xA0
 
 #define BNO_EUL_DEG_LSB (16) // 1 degree = 16 LSB

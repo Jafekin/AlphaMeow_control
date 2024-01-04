@@ -18,7 +18,6 @@ static_library("balance_car") {
         "motor/motor.c",
         "pid/pid.c",
         "test/test.c"
-        
     ]
     cflags = [ "-Wno-unused-variable" ]
     include_dirs = [

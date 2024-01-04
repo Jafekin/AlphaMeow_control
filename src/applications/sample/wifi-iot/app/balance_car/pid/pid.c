@@ -1,15 +1,15 @@
 /*
  * @Author        陈佳辉 1946847867@qq.com
  * @Date          2023-08-09 01:08:39
- * @LastEditTime  2023-08-23 23:11:57
+ * @LastEditTime  2023-08-31 23:32:28
  * @Description
  *
  */
 
 #include "pid.h"
-
+//-2.74
 // float Vertical_Kp = -2.245 * 0.6, Vertical_Kd = -80.91 * 0.6, Velocity_Kp = -0.55, Velocity_Ki = -0.0015, Med = -2.0;
-float Vertical_Kp = -2.245 * 0.6, Vertical_Kd = -80.91 * 0.6, Velocity_Kp = -0.55, Velocity_Ki = -0.0015, Med = -2.0;
+float Vertical_Kp = -2.765, Vertical_Kd = -5.74, Velocity_Kp = 0, Velocity_Ki = 0, Med = -2.0;
 int integral_limit = 1000;
 
 // 直立环：Kp*e(k)+Kd*e(k)_D
@@ -17,7 +17,7 @@ int Vertical(float Angle, float Gyro_y)
 {
     int pwm_out;
     static float Angle_last = 0;
-    float Angle_speed = (Angle - Angle_last) / 10;
+    float Angle_speed = Angle - Angle_last;
     Angle_last = Angle;
 
     // pwm_out = Vertical_Kp * (Angle - Med) + Vertical_Kd * (Gyro_y - 0);

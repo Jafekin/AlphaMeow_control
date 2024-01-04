@@ -1,37 +1,18 @@
 # Balance Car v1.0
 
-#### 介绍
-基于Hi3861
+## 介绍
 
-#### 软件架构
-软件架构说明
+基于Hi3861的平衡车，各项功能完善，平衡性较差有待调参和结构优化，使用前需注意：
+将`src\device\hisilicon\hispark_pegasus\sdk_liteos\platform\os\Huawei_LiteOS\targets\hi3861v100\include\target_config.h`
+内的`LOSCFG_BASE_CORE_TICK_PER_SECOND`改为`1000UL`从而使tick由10ms提升为1ms以提升liteOS-M实时性
 
+## 模块
 
-#### 安装教程
-
-1.  xxx
-2.  xxxx
-3.  xxxx
-
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
-
-
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+- [x] bno055驱动
+- [x] 编码器计数
+- [x] 电机驱动
+- [x] PID控制算法
+- [x] UDP通信调参、数据回传
+- [x] 主函数
+- [x] 无线遥控模块
+- [ ] PID调参  

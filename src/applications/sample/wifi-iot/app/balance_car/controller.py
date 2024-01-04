@@ -1,7 +1,7 @@
 '''
 Author        陈佳辉 1946847867@qq.com
 Date          2023-08-24 12:33:41
-LastEditTime  2023-08-26 22:47:02
+LastEditTime  2023-08-27 20:26:01
 Description   
 
 '''
@@ -43,7 +43,7 @@ data, addr = sController.recvfrom(4096)
 if data == "cjh":
     print(addr+"\n")
 
-while (done != True):
+while done != True:
 
     for event in pygame.event.get():
         if event.type == pygame.JOYBUTTONDOWN:
