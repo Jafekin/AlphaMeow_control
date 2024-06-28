@@ -1,3 +1,10 @@
+/*
+ * @Author        陈佳辉 1946847867@qq.com
+ * @Date          2024-06-26 13:03:09
+ * @LastEditTime  2024-06-26 20:19:59
+ * @Description   
+ * 
+ */
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -231,7 +238,7 @@ static void UDPServerTask(void)
         osThreadYield();
     }
 
-    closesocket(sServer);
+    // closesocket(sServer);
 }
 
 #define CONFIG_SERVER_IP "172.6.3.110" // 要连接的服务器IP

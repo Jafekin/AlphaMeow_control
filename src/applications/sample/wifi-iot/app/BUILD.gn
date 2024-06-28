@@ -16,6 +16,8 @@ import("//build/lite/config/component/lite_component.gni")
 lite_component("app") {
     features = [
         "startup",
-        "balance_car:balance_car",
+        # "balance_car2:balance_car",
+        "chessrobot:control",
+        # "pca9685:pca9685_t5"
     ]
 }
