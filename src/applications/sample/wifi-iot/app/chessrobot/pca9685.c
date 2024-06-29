@@ -134,7 +134,8 @@ hi_void PCA9685_Angle(hi_u8 num, hi_u8 ang)
 {
     hi_u16 off = (hi_u16)(101 + ang * 2.28); // (511 - 101) / 180 = 2.28  已经向上取整
 
-    printf(" ang = %d, off = %d \n", ang, off);
+    // printf(" ang = %d, off = %d \n", ang, off);
+    printf("[PCA9685_Angle] %d -> %d\n", num, ang);
 
     PCA9685_Set_PWM(num, 0, off);
 }

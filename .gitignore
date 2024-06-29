@@ -22,6 +22,8 @@ src/applications/sample/wifi-iot/bundle.json
 src/applications/sample/wifi-iot/README_zh.md
 src/applications/sample/wifi-iot/app/samgr/**
 src/applications/sample/wifi-iot/app/startup/**
+src/applications/sample/wifi-iot/app/pca9685/**
+src/applications/sample/wifi-iot/app/balance_car/**
 
 
 

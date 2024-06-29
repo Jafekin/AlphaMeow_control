@@ -13,6 +13,8 @@ static_library("control") {
         "main.c",
         # "pwm.c",
         "pca9685.c",
+        "oled_ssd1306.c",
+        "ssd1306_fonts.c"
     ]
     cflags = [ "-Wno-unused-variable" ]
     include_dirs = [
