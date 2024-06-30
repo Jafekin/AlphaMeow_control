@@ -1,7 +1,7 @@
 /*
  * @Author        陈佳辉 1946847867@qq.com
  * @Date          2024-06-26 13:12:34
- * @LastEditTime  2024-06-30 00:22:21
+ * @LastEditTime  2024-06-30 17:57:10
  * @Description
  *
  */
@@ -44,7 +44,7 @@ osTimerId_t keyTimerId;
 int keySet = 0;
 int actuatorNo = 2;
 int pwm[4] = {153, 23, 113, 92};
-int action[90][4] = {{168, 3, 78, 70}};
+int action[91][4] = {{153, 23, 113, 92}, {168, 3, 78, 70}};
 
 static float GetVoltage(void)
 {
@@ -108,18 +108,64 @@ static void KeyTimerCallback(char *arg)
 
 static void SuckUp(void)
 {
-    PCA9685_Angle(SOLENOID_VALVE_CHANNEL, 180);
-    PCA9685_Angle(PUMP_CHANNEL, 0);
-    msleep(3000);
+    printf("[SuckUp]:Start!\n");
+    PCA9685_Angle(SOLENOID_VALVE_CHANNEL, 0);
     PCA9685_Angle(PUMP_CHANNEL, 180);
+    msleep(3000);
+    PCA9685_Angle(PUMP_CHANNEL, 0);
+    printf("[SuckUp]:End!\n");
 }
 
 static void PutDown(void)
 {
-    PCA9685_Angle(PUMP_CHANNEL, 180);
-    PCA9685_Angle(SOLENOID_VALVE_CHANNEL, 0);
-    msleep(3000);
+    printf("[PutDown]:Start!\n");
+    PCA9685_Angle(PUMP_CHANNEL, 0);
     PCA9685_Angle(SOLENOID_VALVE_CHANNEL, 180);
+    msleep(1000);
+    PCA9685_Angle(SOLENOID_VALVE_CHANNEL, 0);
+    printf("[PutDown]:End!\n");
+}
+
+static void ResetPwm(void)
+{
+    PCA9685_Angle(SOLENOID_VALVE_CHANNEL, 0);
+    PCA9685_Angle(PUMP_CHANNEL, 0);
+
+    PCA9685_Angle(ACTUATOR_CHANNEL_1, pwm[ACTUATOR_CHANNEL_1 - 2]);
+    PCA9685_Angle(ACTUATOR_CHANNEL_2, pwm[ACTUATOR_CHANNEL_2 - 2]);
+    PCA9685_Angle(ACTUATOR_CHANNEL_3, pwm[ACTUATOR_CHANNEL_3 - 2]);
+    PCA9685_Angle(ACTUATOR_CHANNEL_4, pwm[ACTUATOR_CHANNEL_4 - 2]);
+}
+
+static void Down(int x, int y)
+{
+    const int fluent_times = 12;
+    int ord = x * y;
+    int pre_pwm[4] = {0};
+    for (int i = 0; i < 4; i++)
+    {
+        pre_pwm[i] = pwm[i];
+        int difference = action[ord][i] - pre_pwm[i];
+        int step = difference / fluent_times;
+
+        for (int j = 0; j < fluent_times; j++)
+        {
+            pwm[i] += step;
+            PCA9685_Angle(i + 2, pwm[i]);
+            msleep(50);
+        }
+
+        pwm[i] = action[ord][i];
+        PCA9685_Angle(i + 2, pwm[i]);
+    }
+    // printf("[SetPwm] (%d %d %d %d)->( %d %d %d %d)",
+    //        pre_pwm[0], pre_pwm[1], pre_pwm[2], pre_pwm[3],
+    //        pwm[0], pwm[1], pwm[2], pwm[3]);
+}
+
+static void Up(void)
+{
+
 }
 
 static void ControlTask(void)
@@ -139,21 +185,19 @@ static void ControlTask(void)
 
     PCA9685_Init();
     PCA9685_Set_PWM_Freq(50);
-
-    PCA9685_Angle(ACTUATOR_CHANNEL_1, pwm[ACTUATOR_CHANNEL_1 - 2]);
-    PCA9685_Angle(ACTUATOR_CHANNEL_2, pwm[ACTUATOR_CHANNEL_2 - 2]);
-    PCA9685_Angle(ACTUATOR_CHANNEL_3, pwm[ACTUATOR_CHANNEL_3 - 2]);
-    PCA9685_Angle(ACTUATOR_CHANNEL_4, pwm[ACTUATOR_CHANNEL_4 - 2]);
+    ResetPwm();
 
     while (1)
     {
-        // osMutexAcquire(adjustMutex, 1);
-        PCA9685_Angle(actuatorNo, pwm[actuatorNo - 2]);
-        // osMutexRelease(adjustMutex);
-        msleep(100);
-
         // SuckUp();
+        // msleep(10000);
         // PutDown();
+
+        printf("[ControlTask]\n");
+        SetPwm(0, 0);
+        sleep(3);
+        SetPwm(1, 1);
+        sleep(3);
     }
 }
 
@@ -173,6 +217,8 @@ static void AdjustTask(void)
     while (1)
     {
         // osMutexAcquire(adjustMutex, 1);
+
+        // PCA9685_Angle(actuatorNo, pwm[actuatorNo - 2]);
 
         sprintf(show, "Actuator No: %d", actuatorNo);
         OledShowString(0, 0, show, FONT6_X8);
