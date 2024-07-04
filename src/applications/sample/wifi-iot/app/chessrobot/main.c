@@ -1,7 +1,7 @@
 /*
  * @Author        陈佳辉 1946847867@qq.com
  * @Date          2024-06-26 13:12:34
- * @LastEditTime  2024-07-03 22:42:46
+ * @LastEditTime  2024-07-03 23:30:19
  * @Description
  *
  */
@@ -227,7 +227,7 @@ static void PumpPutDown(void)
     printf("[PumpPutDown]: Start!\n");
     PCA9685_Angle(PUMP_CHANNEL, 0);
     PCA9685_Angle(SOLENOID_VALVE_CHANNEL, 180);
-    msleep(1000);
+    msleep(2000);
     PCA9685_Angle(SOLENOID_VALVE_CHANNEL, 0);
     printf("[PumpPutDown]: End!\n");
 }
@@ -404,10 +404,18 @@ void ChangeData(char *stream)
             i++;
             token = strtok(NULL, ", ");
         }
-
+        MechanicalArmDown(data[0], data[1]);
+        PumpSuckUp();
+        MechanicalArmUp();
+        MechanicalArmDown(data[2], data[3]);
+        PCA9685_Angle(PUMP_CHANNEL, 0);
+        PCA9685_Angle(SOLENOID_VALVE_CHANNEL, 180);
+        MechanicalArmUp();
+        PumpPutDown();
+        ResetPwm();
         printf("%%: %d %d %d %d\n", data[0], data[1], data[2], data[3]);
     }
-    osSemaphoreRelease(adjustSemaphore);
+    // osSemaphoreRelease(adjustSemaphore);
 }
 
 static void ControlTask(void)
@@ -431,33 +439,35 @@ static void ControlTask(void)
 
     while (1)
     {
-        printf("[ControlTask]: begin!\n");
+        // printf("[ControlTask]: begin!\n");
 
-        // tag
-        if (mode == 1)
-        {
-            for (int i = 1; i < 10; i++)
-            {
-                MechanicalArmDown(line, i);
-                PumpSuckUp();
-                MechanicalArmUp();
-                MechanicalArmGetBack();
-                PumpPutDown();
-                sleep(2);
-            }
-        }
-        else if (mode == 2)
-        {
-            MechanicalArmDown(adjust_x, adjust_y);
-            PumpSuckUp();
-            MechanicalArmUp();
-            MechanicalArmGetBack();
-            PumpPutDown();
-            MechanicalArmDown(adjust_x, adjust_y);
-        }
+        // // tag
+        // if (mode == 1)
+        // {
+        //     for (int i = 1; i < 10; i++)
+        //     {
+        //         MechanicalArmDown(line, i);
+        //         PumpSuckUp();
+        //         MechanicalArmUp();
+        //         MechanicalArmGetBack();
+        //         PumpPutDown();
+        //         sleep(2);
+        //     }
+        // }
+        // else if (mode == 2)
+        // {
+        //     MechanicalArmDown(adjust_x, adjust_y);
+        //     PumpSuckUp();
+        //     MechanicalArmUp();
+        //     MechanicalArmGetBack();
+        //     PumpPutDown();
+        //     MechanicalArmDown(adjust_x, adjust_y);
+        // }
 
-        osSemaphoreAcquire(adjustSemaphore, HI_SYS_WAIT_FOREVER);
-        ResetPwm();
+        // osSemaphoreAcquire(adjustSemaphore, HI_SYS_WAIT_FOREVER);
+        // ResetPwm();
+
+        sleep(1);
     }
 }
 
