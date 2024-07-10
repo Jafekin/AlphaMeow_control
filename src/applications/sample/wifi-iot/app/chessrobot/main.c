@@ -1,7 +1,7 @@
 /*
  * @Author        陈佳辉 1946847867@qq.com
  * @Date          2024-06-26 13:12:34
- * @LastEditTime  2024-07-10 07:52:11
+ * @LastEditTime  2024-07-10 00:44:26
  * @Description
  *
  */
@@ -52,7 +52,7 @@ osTimerId_t keyTimerId;
 
 int keySet = 0;
 int actuatorNo = 2;
-int pwm[5] = {};
+int pwm[5] = {180, 80, 20, 50, 164};
 
 int action[101][5] = {
     {180, 80, 20, 50, 164},   // 1*0
@@ -139,7 +139,7 @@ int action[101][5] = {
     {132, 106, 153, 41, 153}, // 9*1
     {140, 115, 151, 41, 158}, // 9*2
     {149, 123, 149, 43, 155}, // 9*3`
-    {151, 126, 146, 41, 155}, // 9*4`
+    {151, 126, 146, 42, 155}, // 9*4`
     {152, 137, 150, 41, 155}, // 9*5
     {152, 142, 150, 41, 155}, // 9*6
     {145, 139, 146, 41, 155}, // 9*7
@@ -158,10 +158,10 @@ int action[101][5] = {
 };
 
 // todo:调参
-int adjust_x = 4;
+int adjust_x = 7;
 int adjust_y = 1;
 int mode = 2;
-int line = 3;
+int line = 1;
 int flag = -1;
 
 static float GetVoltage(void)
@@ -265,40 +265,20 @@ static void ResetPwm(void)
 static void MechanicalArmDown(int x, int y)
 {
     int ord = (x - 1) * 10 + y;
-    printf("[MechanicalArmDown]: %d %d %d %d %d %d %d %d\n", x, y, ord, action[ord][0], action[ord][1],
-           action[ord][2], action[ord][3], action[ord][4]);
-
     int pre_pwm[5] = {0};
-    int max_steps = 0;
-
-    for (int i = 0; i < 3; i++)
+    for (int i = 2; i >= 0; i--)
     {
         pre_pwm[i] = pwm[i];
         int difference = action[ord][i] - pre_pwm[i];
-        int steps = abs(difference);
-        if (steps > max_steps)
-        {
-            max_steps = steps;
-        }
-    }
-    for (int step = 0; step < max_steps; step++)
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            int difference = action[ord][i] - pre_pwm[i];
-            int total_steps = abs(difference);
-            if (step < total_steps)
-            {
-                int direction = difference / total_steps;
-                pwm[i] += direction;
-                PCA9685_Angle(i + 2, pwm[i]);
-            }
-        }
-        msleep(25);
-    }
+        int step = difference / abs(difference);
 
-    for (int i = 0; i < 3; i++)
-    {
+        for (int j = 0; j < abs(difference); j++)
+        {
+            pwm[i] += step;
+            PCA9685_Angle(i + 2, pwm[i]);
+            msleep(25);
+        }
+
         pwm[i] = action[ord][i];
         PCA9685_Angle(i + 2, pwm[i]);
     }
@@ -347,36 +327,19 @@ static void MechanicalArmGetBack(void)
 {
     int ord = 0;
     int pre_pwm[5] = {0};
-    int max_steps = 0;
-
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i <= 2; i++)
     {
         pre_pwm[i] = pwm[i];
         int difference = action[ord][i] - pre_pwm[i];
-        int steps = abs(difference);
-        if (steps > max_steps)
-        {
-            max_steps = steps;
-        }
-    }
-    for (int step = 0; step < max_steps; step++)
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            int difference = action[ord][i] - pre_pwm[i];
-            int total_steps = abs(difference);
-            if (step < total_steps)
-            {
-                int direction = difference / total_steps;
-                pwm[i] += direction;
-                PCA9685_Angle(i + 2, pwm[i]);
-            }
-        }
-        msleep(25);
-    }
+        int step = difference / abs(difference);
 
-    for (int i = 0; i < 3; i++)
-    {
+        for (int j = 0; j < abs(difference); j++)
+        {
+            pwm[i] += step;
+            PCA9685_Angle(i + 2, pwm[i]);
+            msleep(25);
+        }
+
         pwm[i] = action[ord][i];
         PCA9685_Angle(i + 2, pwm[i]);
     }
@@ -407,12 +370,6 @@ void ChangeData(char *stream)
             printf("%d ", data[i]);
         }
         printf("\n");
-        MechanicalArmDown(adjust_x, adjust_y);
-        PumpSuckUp();
-        MechanicalArmUp();
-        MechanicalArmGetBack();
-        PumpPutDown();
-        MechanicalArmDown(adjust_x, adjust_y);
     }
     else if (stream[0] == '#')
     {
@@ -431,12 +388,6 @@ void ChangeData(char *stream)
         adjust_x = data[0];
         adjust_y = data[1];
         printf("#: %d %d\n", data[0], data[1]);
-        MechanicalArmDown(adjust_x, adjust_y);
-        PumpSuckUp();
-        MechanicalArmUp();
-        MechanicalArmGetBack();
-        PumpPutDown();
-        MechanicalArmDown(adjust_x, adjust_y);
     }
     else if (stream[0] == 'm')
     {
@@ -452,18 +403,10 @@ void ChangeData(char *stream)
             i++;
             token = strtok(NULL, ", ");
         }
-        line = data[0];
-        mode = data[1];
-        for (int i = 1; i < 10; i++)
-        {
-            MechanicalArmDown(line, i);
-            PumpSuckUp();
-            MechanicalArmUp();
-            MechanicalArmGetBack();
-            PumpPutDown();
-            sleep(2);
-        }
+        mode = data[0];
+        line = data[1];
     }
+
     else if (stream[0] == '%')
     {
         flag = 4;
@@ -489,8 +432,8 @@ void ChangeData(char *stream)
         ResetPwm();
         printf("%%: %d %d %d %d\n", data[0], data[1], data[2], data[3]);
     }
-    // if (flag != 4 && flag != -1)
-    //     osSemaphoreRelease(adjustSemaphore);
+    if (flag != 4 && flag != -1)
+        osSemaphoreRelease(adjustSemaphore);
 }
 
 static void ControlTask(void)
@@ -516,31 +459,31 @@ static void ControlTask(void)
     {
         printf("[ControlTask]: begin!\n");
 
-        // // tag
-        // if (mode == 1)
-        // {
-        //     for (int i = 1; i < 10; i++)
-        //     {
-        //         MechanicalArmDown(line, i);
-        //         PumpSuckUp();
-        //         MechanicalArmUp();
-        //         MechanicalArmGetBack();
-        //         PumpPutDown();
-        //         sleep(2);
-        //     }
-        // }
-        // else if (mode == 2)
-        // {
-        //     MechanicalArmDown(adjust_x, adjust_y);
-        //     PumpSuckUp();
-        //     MechanicalArmUp();
-        //     MechanicalArmGetBack();
-        //     PumpPutDown();
-        //     MechanicalArmDown(adjust_x, adjust_y);
-        // }
+        // tag
+        if (mode == 1)
+        {
+            for (int i = 1; i < 10; i++)
+            {
+                MechanicalArmDown(line, i);
+                PumpSuckUp();
+                MechanicalArmUp();
+                MechanicalArmGetBack();
+                PumpPutDown();
+                sleep(2);
+            }
+        }
+        else if (mode == 2)
+        {
+            MechanicalArmDown(adjust_x, adjust_y);
+            PumpSuckUp();
+            MechanicalArmUp();
+            MechanicalArmGetBack();
+            PumpPutDown();
+            MechanicalArmDown(adjust_x, adjust_y);
+        }
 
-        // osSemaphoreAcquire(adjustSemaphore, HI_SYS_WAIT_FOREVER);
-        // ResetPwm();
+        osSemaphoreAcquire(adjustSemaphore, HI_SYS_WAIT_FOREVER);
+        ResetPwm();
 
         sleep(1);
     }
@@ -577,22 +520,16 @@ static void AdjustTask(void)
     }
 }
 
-// #define CONFIG_WIFI_SSID "_OurEDA_OurFi"
-// #define CONFIG_WIFI_PWD "OurEDA2021"
-// #define NATIVE_IP_ADDRESS "172.6.1.118"
-// #define DEVICE_IP_ADDRESS "172.6.1.148"
-// #define HOST_PORT (888)
-// #define DEVICE_PORT (777)
-
-#define CONFIG_WIFI_SSID "Wintoki"
-#define CONFIG_WIFI_PWD "1234567890"
-#define NATIVE_IP_ADDRESS "192.168.145.5"
-#define DEVICE_IP_ADDRESS "192.168.145.139"
+#define CONFIG_WIFI_SSID "_OurEDA_OurFi"
+#define CONFIG_WIFI_PWD "OurEDA2021"
+#define NATIVE_IP_ADDRESS "172.6.1.118"
+#define DEVICE_IP_ADDRESS "172.6.1.148"
 #define HOST_PORT (888)
 #define DEVICE_PORT (777)
 
 static void UDPServerTask(void)
 {
+    WifiConnect(CONFIG_WIFI_SSID, CONFIG_WIFI_PWD);
 
     // sServer 进行监听，在 new_fd 接收新的链接
     int sServer = socket(AF_INET, SOCK_DGRAM, 0);
@@ -633,7 +570,6 @@ static void UDPServerTask(void)
         recvfrom(sServer, recvBuf, sizeof(recvBuf), 0, (struct sockaddr *)&remoteAddr, &remote_addr_length);
         printf("%s:%d=>%s\n", inet_ntoa(remoteAddr.sin_addr), ntohs(remoteAddr.sin_port), recvBuf);
         ChangeData(recvBuf);
-        memset_s(recvBuf, 512 * sizeof(char), 0, 512 * sizeof(char));
 
         if (flag == 4)
         {
@@ -649,8 +585,6 @@ static void UDPServerTask(void)
 
 static void TaskCreateAndInit(void)
 {
-    WifiConnect(CONFIG_WIFI_SSID, CONFIG_WIFI_PWD);
-
     if ((keyTimerId = osTimerNew(KeyTimerCallback, osTimerPeriodic, NULL, NULL)) == NULL)
     {
         printf("[TaskCreateAndInit] Failed to create keyTimerId!\n");
