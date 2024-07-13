@@ -3,6 +3,7 @@
 build/**
 # src/**
 LICENSE
+doc/**
 README.md
 src/base/**
 src/build/**
