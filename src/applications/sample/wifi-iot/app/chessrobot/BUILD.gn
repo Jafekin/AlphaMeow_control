@@ -12,7 +12,7 @@ static_library("control") {
         "//vendor/bearpi/bearpi_hm_nano/common/iot_hardware_hals/src/hal_iot_i2c_ex.c",
         "main.c",
         "wifi_connect.c",
-        "debug.c",
+        #"debug.c",
         "pca9685.c",
         "oled_ssd1306.c",
         "ssd1306_fonts.c"
