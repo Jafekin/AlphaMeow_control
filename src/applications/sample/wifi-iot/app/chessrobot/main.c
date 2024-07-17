@@ -76,7 +76,7 @@ int action[101][5] = {
     {178, 82, 61, 23, 145},   // 2*8!
     {155, 60, 43, 23, 151},   // 2*9!
     {180, 80, 20, 50, 164},   // 3*0
-    {157, 36, 83, 27, 145},  // 3*1!
+    {157, 36, 83, 27, 145},   // 3*1!
     {173, 59, 93, 26, 145},   // 3*2!
     {179, 70, 94, 28, 145},   // 3*3!
     {170, 54, 72, 27, 146},   // 3*4!
@@ -87,12 +87,12 @@ int action[101][5] = {
     {167, 88, 70, 30, 154},   // 3*9!
     {180, 80, 20, 50, 164},   // 4*0
     {164, 65, 110, 30, 151},  // 4*1!
-    {167, 63, 99, 31, 145},  // 4*2!
-    {174, 72, 99, 31, 145},  // 4*3!
-    {180, 85, 100, 31, 145},   // 4*4!
+    {167, 63, 99, 31, 145},   // 4*2!
+    {174, 72, 99, 31, 145},   // 4*3!
+    {180, 85, 100, 31, 145},  // 4*4!
     {182, 91, 98, 31, 145},   // 4*5!
     {175, 84, 87, 32, 145},   // 4*6!
-    {180, 100, 92, 32, 145},   // 4*7!
+    {180, 100, 92, 32, 145},  // 4*7!
     {177, 103, 90, 32, 150},  // 4*8!
     {173, 109, 90, 33, 151},  // 4*9!
     {180, 80, 20, 50, 164},   // 5*0
@@ -100,8 +100,8 @@ int action[101][5] = {
     {162, 71, 109, 34, 147},  // 5*2!
     {169, 79, 107, 33, 147},  // 5*3!
     {174, 90, 108, 33, 147},  // 5*4!
-    {178, 100, 108, 33, 147},  // 5*5!
-    {176, 99, 101, 33, 153}, // 5*6!
+    {178, 100, 108, 33, 147}, // 5*5!
+    {176, 99, 101, 33, 153},  // 5*6!
     {176, 108, 102, 33, 153}, // 5*7!
     {176, 116, 103, 33, 153}, // 5*8!
     {179, 136, 111, 33, 156}, // 5*9!
@@ -163,6 +163,7 @@ int adjust_y = 1;
 int mode = 2;
 int line = 3;
 int flag = -1;
+bool drop = false;
 
 static float GetVoltage(void)
 {
@@ -466,7 +467,7 @@ void ChangeData(char *stream)
     }
     else if (stream[0] == '%')
     {
-        flag = 4;
+        drop = false;
         int data[4] = {0};
         stream++;
         char *token = strtok(stream, ", ");
@@ -478,6 +479,8 @@ void ChangeData(char *stream)
             i++;
             token = strtok(NULL, ", ");
         }
+        if (data[2] == 1 && data[3] == 0)
+            drop = true;
         MechanicalArmDown(data[0], data[1]);
         PumpSuckUp();
         MechanicalArmUp();
@@ -586,13 +589,14 @@ static void AdjustTask(void)
 
 #define CONFIG_WIFI_SSID "Wintoki"
 #define CONFIG_WIFI_PWD "1234567890"
-#define NATIVE_IP_ADDRESS "192.168.145.5"
-#define DEVICE_IP_ADDRESS "192.168.145.139"
+#define NATIVE_IP_ADDRESS "192.168.164.4"
+#define DEVICE_IP_ADDRESS "192.168.164.239"
 #define HOST_PORT (888)
-#define DEVICE_PORT (777)
+#define DEVICE_PORT (45841)
 
 static void UDPServerTask(void)
 {
+    WifiConnect(CONFIG_WIFI_SSID, CONFIG_WIFI_PWD);
 
     // sServer 进行监听，在 new_fd 接收新的链接
     int sServer = socket(AF_INET, SOCK_DGRAM, 0);
@@ -635,11 +639,12 @@ static void UDPServerTask(void)
         ChangeData(recvBuf);
         memset_s(recvBuf, 512 * sizeof(char), 0, 512 * sizeof(char));
 
-        if (flag == 4)
-        {
-            sprintf(stream, "Ack!\n");
-            sendto(sServer, stream, strlen(stream), 0, (struct sockaddr *)&remoteAddr, remote_addr_length);
-        }
+        // if (!drop)
+        // {
+        sprintf(stream, "Ack!\n");
+        sendto(sServer, stream, strlen(stream), 0, (struct sockaddr *)&remoteAddr, remote_addr_length);
+        printf("%s:%d<=%s\n", inet_ntoa(remoteAddr.sin_addr), ntohs(remoteAddr.sin_port), stream);
+        // }
 
         usleep(10);
         osThreadYield();
@@ -649,7 +654,6 @@ static void UDPServerTask(void)
 
 static void TaskCreateAndInit(void)
 {
-    WifiConnect(CONFIG_WIFI_SSID, CONFIG_WIFI_PWD);
 
     if ((keyTimerId = osTimerNew(KeyTimerCallback, osTimerPeriodic, NULL, NULL)) == NULL)
     {
