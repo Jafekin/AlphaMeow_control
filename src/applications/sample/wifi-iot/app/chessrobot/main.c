@@ -492,61 +492,6 @@ void ChangeData(char *stream)
         ResetPwm();
         printf("%%: %d %d %d %d\n", data[0], data[1], data[2], data[3]);
     }
-    // if (flag != 4 && flag != -1)
-    //     osSemaphoreRelease(adjustSemaphore);
-}
-
-static void ControlTask(void)
-{
-    unsigned int ret = 0;
-
-    IoTGpioInit(IOT_I2C0_SDA_GPIO);
-    IoTGpioSetFunc(IOT_I2C0_SDA_GPIO, IOT_GPIO_FUNC_GPIO_13_I2C0_SDA);
-
-    IoTGpioInit(IOT_I2C0_SCL_GPIO);
-    IoTGpioSetFunc(IOT_I2C0_SCL_GPIO, IOT_GPIO_FUNC_GPIO_14_I2C0_SCL);
-
-    if ((ret = IoTI2cInit(HI_I2C_IDX_0, 400000)) != 0)
-    {
-        printf(" [IoTI2c0Init] Failed!: 0x%x \n", ret);
-    }
-
-    PCA9685_Init();
-    PCA9685_Set_PWM_Freq(50);
-    ResetPwm();
-
-    while (1)
-    {
-        printf("[ControlTask]: begin!\n");
-
-        // // tag
-        // if (mode == 1)
-        // {
-        //     for (int i = 1; i < 10; i++)
-        //     {
-        //         MechanicalArmDown(line, i);
-        //         PumpSuckUp();
-        //         MechanicalArmUp();
-        //         MechanicalArmGetBack();
-        //         PumpPutDown();
-        //         sleep(2);
-        //     }
-        // }
-        // else if (mode == 2)
-        // {
-        //     MechanicalArmDown(adjust_x, adjust_y);
-        //     PumpSuckUp();
-        //     MechanicalArmUp();
-        //     MechanicalArmGetBack();
-        //     PumpPutDown();
-        //     MechanicalArmDown(adjust_x, adjust_y);
-        // }
-
-        // osSemaphoreAcquire(adjustSemaphore, HI_SYS_WAIT_FOREVER);
-        // ResetPwm();
-
-        sleep(1);
-    }
 }
 
 static void AdjustTask(void)
@@ -639,12 +584,9 @@ static void UDPServerTask(void)
         ChangeData(recvBuf);
         memset_s(recvBuf, 512 * sizeof(char), 0, 512 * sizeof(char));
 
-        // if (!drop)
-        // {
         sprintf(stream, "Ack!\n");
         sendto(sServer, stream, strlen(stream), 0, (struct sockaddr *)&remoteAddr, remote_addr_length);
         printf("%s:%d<=%s\n", inet_ntoa(remoteAddr.sin_addr), ntohs(remoteAddr.sin_port), stream);
-        // }
 
         usleep(10);
         osThreadYield();
@@ -654,6 +596,22 @@ static void UDPServerTask(void)
 
 static void TaskCreateAndInit(void)
 {
+    unsigned int ret = 0;
+
+    IoTGpioInit(IOT_I2C0_SDA_GPIO);
+    IoTGpioSetFunc(IOT_I2C0_SDA_GPIO, IOT_GPIO_FUNC_GPIO_13_I2C0_SDA);
+
+    IoTGpioInit(IOT_I2C0_SCL_GPIO);
+    IoTGpioSetFunc(IOT_I2C0_SCL_GPIO, IOT_GPIO_FUNC_GPIO_14_I2C0_SCL);
+
+    if ((ret = IoTI2cInit(HI_I2C_IDX_0, 400000)) != 0)
+    {
+        printf(" [IoTI2c0Init] Failed!: 0x%x \n", ret);
+    }
+
+    PCA9685_Init();
+    PCA9685_Set_PWM_Freq(50);
+    ResetPwm();
 
     if ((keyTimerId = osTimerNew(KeyTimerCallback, osTimerPeriodic, NULL, NULL)) == NULL)
     {
@@ -667,18 +625,6 @@ static void TaskCreateAndInit(void)
     }
 
     osThreadAttr_t attr;
-
-    attr.name = "ControlTask";
-    attr.attr_bits = 0U;
-    attr.cb_mem = NULL;
-    attr.cb_size = 0U;
-    attr.stack_mem = NULL;
-    attr.stack_size = 1024 * 8;
-    attr.priority = 25;
-    if (osThreadNew((osThreadFunc_t)ControlTask, NULL, &attr) == NULL)
-    {
-        printf("[TaskCreateAndInit] Failed to create ControlTask!\n");
-    }
 
     attr.name = "AdjustTask";
     attr.attr_bits = 0U;
