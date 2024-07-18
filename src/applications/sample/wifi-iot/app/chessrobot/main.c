@@ -1,7 +1,7 @@
 /*
  * @Author        陈佳辉 1946847867@qq.com
  * @Date          2024-06-26 13:12:34
- * @LastEditTime  2024-07-10 00:44:26
+ * @LastEditTime  2024-07-14 21:32:11
  * @Description
  *
  */
@@ -32,6 +32,13 @@
 
 #include "pca9685.h"
 #include "oled_ssd1306.h"
+
+#define DEBUG(fmt...)                                \
+    do                                               \
+    {                                                \
+        printf("%d-[%s]: ", __LINE__, __FUNCTION__); \
+        printf(fmt);                                 \
+    } while (0)
 
 #define BUTTON_GPIO (5)
 
@@ -171,7 +178,7 @@ static float GetVoltage(void)
 
     if ((ret = IoTAdcRead(HI_ADC_CHANNEL_2, &data, IOT_ADC_EQU_MODEL_8, IOT_ADC_CUR_BAIS_DEFAULT, 0xA)) != 0)
     {
-        printf("[GetVoltage] ADC Read Fail: 0x%x\n", ret);
+        DEBUG("ADC Read Fail: 0x%x\n", ret);
     }
 
     return (float)data * 1.8 * 4 / 4096.0;
@@ -226,22 +233,22 @@ static void KeyTimerCallback(char *arg)
 
 static void PumpSuckUp(void)
 {
-    printf("[PumpSuckUp]: Start!\n");
+    DEBUG("Start !\n");
     PCA9685_Angle(SOLENOID_VALVE_CHANNEL, 0);
     PCA9685_Angle(PUMP_CHANNEL, 180);
     msleep(2000);
     PCA9685_Angle(PUMP_CHANNEL, 0);
-    printf("[PumpSuckUp]: End!\n");
+    DEBUG("End !\n");
 }
 
 static void PumpPutDown(void)
 {
-    printf("[PumpPutDown]: Start!\n");
+    DEBUG("Start !\n");
     PCA9685_Angle(PUMP_CHANNEL, 0);
     PCA9685_Angle(SOLENOID_VALVE_CHANNEL, 180);
     msleep(2000);
     PCA9685_Angle(SOLENOID_VALVE_CHANNEL, 0);
-    printf("[PumpPutDown]: End!\n");
+    DEBUG("End !\n");
 }
 
 static void ResetPwm(void)
@@ -448,7 +455,7 @@ static void ControlTask(void)
 
     if ((ret = IoTI2cInit(HI_I2C_IDX_0, 400000)) != 0)
     {
-        printf(" [IoTI2c0Init] Failed!: 0x%x \n", ret);
+        DEBUG("IoTI2cInit Failed: 0x%x \n", ret);
     }
 
     PCA9685_Init();
@@ -457,7 +464,7 @@ static void ControlTask(void)
 
     while (1)
     {
-        printf("[ControlTask]: begin!\n");
+        DEBUG("begin!\n");
 
         // tag
         if (mode == 1)
@@ -529,13 +536,11 @@ static void AdjustTask(void)
 
 static void UDPServerTask(void)
 {
-    WifiConnect(CONFIG_WIFI_SSID, CONFIG_WIFI_PWD);
-
     // sServer 进行监听，在 new_fd 接收新的链接
     int sServer = socket(AF_INET, SOCK_DGRAM, 0);
     if (sServer == -1)
     {
-        printf("create server socket failed\r\n");
+        DEBUG("create server socket failed\r\n");
         close(sServer);
     }
 
@@ -551,7 +556,7 @@ static void UDPServerTask(void)
     serAddr.sin_addr.s_addr = inet_addr(NATIVE_IP_ADDRESS);
     if (bind(sServer, (struct sockaddr *)&serAddr, sizeof(serAddr)) == -1)
     {
-        printf("bind socket failed\r\n");
+        DEBUG("bind socket failed\r\n");
         close(sServer);
     }
 
@@ -585,15 +590,17 @@ static void UDPServerTask(void)
 
 static void TaskCreateAndInit(void)
 {
+    WifiConnect(CONFIG_WIFI_SSID, CONFIG_WIFI_PWD);
+
     if ((keyTimerId = osTimerNew(KeyTimerCallback, osTimerPeriodic, NULL, NULL)) == NULL)
     {
-        printf("[TaskCreateAndInit] Failed to create keyTimerId!\n");
+        DEBUG("Failed to create keyTimerId!\n");
     }
     osTimerStart(keyTimerId, 1U);
 
     if ((adjustSemaphore = osSemaphoreNew(1, 0, NULL)) == NULL)
     {
-        printf("[TaskCreateAndInit] Failed to create adjustMutex!\n");
+        DEBUG("Failed to create adjustMutex!\n");
     }
 
     osThreadAttr_t attr;
@@ -607,7 +614,7 @@ static void TaskCreateAndInit(void)
     attr.priority = 25;
     if (osThreadNew((osThreadFunc_t)ControlTask, NULL, &attr) == NULL)
     {
-        printf("[TaskCreateAndInit] Failed to create ControlTask!\n");
+        DEBUG("Failed to create ControlTask!\n");
     }
 
     attr.name = "AdjustTask";
@@ -619,7 +626,7 @@ static void TaskCreateAndInit(void)
     attr.priority = 24;
     if (osThreadNew((osThreadFunc_t)AdjustTask, NULL, &attr) == NULL)
     {
-        printf("[TaskCreateAndInit] Failed to create AdjustTask!\n");
+        DEBUG("Failed to create AdjustTask!\n");
     }
 
     attr.name = "UDPServerTask";
@@ -631,7 +638,7 @@ static void TaskCreateAndInit(void)
     attr.priority = 24;
     if (osThreadNew((osThreadFunc_t)UDPServerTask, NULL, &attr) == NULL)
     {
-        printf("[TaskCreateAndInit] Failed to create UDPServerTask!\n");
+        DEBUG("Failed to create UDPServerTask!\n");
     }
 }
 
